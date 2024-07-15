@@ -23,7 +23,7 @@ public class Teleport : MonoBehaviour
         }
     }
 
-    private bool IsOnDistance()
+    public bool IsOnDistance()
     {
         if (Vector2.Distance(_player.transform.position, transform.position) < 1f)
         {
@@ -35,6 +35,5 @@ public class Teleport : MonoBehaviour
     private void TeleportPlayer()
     {
         _player.transform.position = _connectedPortal.transform.position;
-        Debug.Log("Teleport");
     }
 }
