@@ -1,88 +1,87 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GrabObject : MonoBehaviour
 {
-    [SerializeField, Range(0f, 10f)] public float _maxDistance = 0f;
-    public Transform holdpoint;
-    private GameObject currentlyGrabbedObject, _root;
-    private float _currentDistance, _minDistance;
-    [SerializeField, Range(0f, 10f)] private float _smooth;
-    [SerializeField, Range(0f, 10f)] private float _horizontalStrength;
-    [SerializeField, Range(0f, 10f)] private float _verticalStrength;
-    private bool grab = false;
-    private Rigidbody2D _body, _bodyGrabbed;
-    private Ground _ground;
+    [SerializeField, Range(0f, 10f)] private float maxDistance = 0f;
+    [SerializeField] private Transform holdpoint;
+    [SerializeField, Range(0f, 10f)] private float smooth;
+    [SerializeField, Range(0f, 10f)] private float horizontalStrength;
+    [SerializeField, Range(0f, 10f)] private float verticalStrength;
+    [SerializeField] private LayerMask playerLayer;
+    [SerializeField] private LayerMask grabbableLayer;
 
+    private Rigidbody2D body, bodyGrabbed;
+    private GameObject currentlyGrabbedObject;
 
-    void Awake()
+    private void Awake()
     {
-        _body = GetComponent<Rigidbody2D>();
-        _root = GameObject.Find("Grabbable");
-        _minDistance = _maxDistance;
+        body = GetComponent<Rigidbody2D>();
     }
 
-    void Update()
+    private void Update()
     {
-        if (Input.GetKey(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.F))
         {
-            grab = true;
-            GetNearestObject();
-        }
-
-        if (Input.GetKeyUp(KeyCode.F))
-        {
-            if (currentlyGrabbedObject != null)
+            if (currentlyGrabbedObject == null)
+                GetNearestObject();       
+            else
             {
-                _ground = currentlyGrabbedObject.GetComponent<Ground>();
+                bodyGrabbed.gravityScale = 1;
+                bodyGrabbed.velocity = new Vector2(
+                    body.velocity.x * horizontalStrength,
+                    Mathf.Abs(body.velocity.x) * verticalStrength
+                );
 
-                grab = false;
-                _bodyGrabbed.gravityScale = 1;
-                _bodyGrabbed.velocity = new Vector2(_body.velocity.x * _horizontalStrength, Mathf.Abs(_body.velocity.x) * _verticalStrength);
-                _minDistance = _maxDistance;
-
-                // if (_ground.OnGround)
-                //     Physics2D.IgnoreCollision(GetComponent<Collider2D>(), currentlyGrabbedObject.GetComponent<Collider2D>(), false);
+                bodyGrabbed.excludeLayers = 0;
                 currentlyGrabbedObject = null;
             }
         }
 
-        if (grab && currentlyGrabbedObject != null)
+        if (currentlyGrabbedObject != null)
         {
+            bodyGrabbed.velocity = new Vector2(0f, 0f);
+            bodyGrabbed.excludeLayers = playerLayer;
+            bodyGrabbed.gravityScale = 0;
 
-            _bodyGrabbed = currentlyGrabbedObject.GetComponent<Rigidbody2D>();
-            _bodyGrabbed.velocity = new Vector2(0f, 0f);
-            Physics2D.IgnoreCollision(GetComponent<Collider2D>(), currentlyGrabbedObject.GetComponent<Collider2D>());
-            _bodyGrabbed.gravityScale = 0;
-            // currentlyGrabbedObject.transform.position = transform.position;
-            currentlyGrabbedObject.transform.position = Vector2.Lerp(currentlyGrabbedObject.transform.position, transform.position, _smooth * Time.deltaTime);
-
+            currentlyGrabbedObject.transform.position = Vector2.Lerp(
+                currentlyGrabbedObject.transform.position,
+                holdpoint.position,
+                smooth * Time.deltaTime
+            );
         }
     }
 
     private void GetNearestObject()
     {
-        for (int i = 0; i < _root.transform.childCount; i++)
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(
+            transform.position,
+            maxDistance,
+            Vector2.zero,
+            0,
+            grabbableLayer
+        );
+
+        float minDistance = maxDistance;
+        GameObject closest = null;
+
+        foreach (RaycastHit2D hit in hits)
         {
-            GameObject child = _root.transform.GetChild(i).gameObject;
-
-            _currentDistance = Vector2.Distance(transform.position, child.transform.position);
-
-            if (_currentDistance < _maxDistance)
+            float distance = Vector3.Distance(hit.transform.position, transform.position);
+            if (distance < minDistance)
             {
-                if (_minDistance == _maxDistance)
-                {
-                    Debug.Log("Grabbed");
-                    _minDistance = _currentDistance;
-                    currentlyGrabbedObject = child;
-                }
-                else if (_currentDistance < _minDistance)
-                {
-                    _minDistance = _currentDistance;
-                    currentlyGrabbedObject = child;
-                }
+                minDistance = distance;
+                closest = hit.transform.gameObject;
             }
         }
+        
+        currentlyGrabbedObject = closest;
+        if (currentlyGrabbedObject != null)
+            bodyGrabbed = currentlyGrabbedObject.GetComponent<Rigidbody2D>();
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, maxDistance);
     }
 }
