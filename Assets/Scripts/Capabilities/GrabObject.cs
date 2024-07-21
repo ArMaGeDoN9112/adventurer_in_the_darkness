@@ -12,6 +12,8 @@ public class GrabObject : MonoBehaviour
 
     private Rigidbody2D body, bodyGrabbed;
     private GameObject currentlyGrabbedObject;
+    public bool abilityEnabled = false;
+    // private bool thrown = false;
 
     private void Awake()
     {
@@ -20,10 +22,10 @@ public class GrabObject : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.F) && abilityEnabled)
         {
             if (currentlyGrabbedObject == null)
-                GetNearestObject();       
+                GetNearestObject();
             else
             {
                 bodyGrabbed.gravityScale = 1;
@@ -51,6 +53,16 @@ public class GrabObject : MonoBehaviour
         }
     }
 
+    // private void OnCollisionExit2D(Collision2D collision)
+    // {
+    //     Debug.Log(collision.collider.gameObject.name);
+    //     Debug.Log(bodyGrabbed.gameObject.name);
+    //     if (collision.collider.gameObject == bodyGrabbed.gameObject)
+    //     {
+    //         bodyGrabbed.excludeLayers = 0;
+    //     }
+    // }
+
     private void GetNearestObject()
     {
         RaycastHit2D[] hits = Physics2D.CircleCastAll(
@@ -73,7 +85,7 @@ public class GrabObject : MonoBehaviour
                 closest = hit.transform.gameObject;
             }
         }
-        
+
         currentlyGrabbedObject = closest;
         if (currentlyGrabbedObject != null)
             bodyGrabbed = currentlyGrabbedObject.GetComponent<Rigidbody2D>();

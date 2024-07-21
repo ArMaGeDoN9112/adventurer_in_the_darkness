@@ -1,15 +1,15 @@
 using UnityEngine;
 
 
-[RequireComponent(typeof(Controller))]
+[RequireComponent(typeof(Rigidbody2D))]
 public class Jump : MonoBehaviour
 {
     [SerializeField, Range(0f, 10f)] private float _jumpHeight = 3f;
     [SerializeField, Range(0, 5)] private int _maxAirJumps = 0;
     [SerializeField, Range(0f, 5f)] private float _downwardMovementMultiplier = 3f;
     [SerializeField, Range(0f, 5f)] private float _upwardMovementMultiplier = 1.7f;
+    [SerializeField] private float _jumpWindowTime;
 
-    private Controller _controller;
     private Rigidbody2D _body;
     private Ground _ground;
     private Vector2 _velocity;
@@ -23,14 +23,19 @@ public class Jump : MonoBehaviour
     {
         _body = GetComponent<Rigidbody2D>();
         _ground = GetComponent<Ground>();
-        _controller = GetComponent<Controller>();
 
         _defaultGravityScale = 1f;
     }
 
-    void Update()
+    public void Action()
     {
-        _desiredJump |= _controller.input.RetrieveJumpInput();
+        _desiredJump = true;
+        Invoke(nameof(ResetJump), _jumpWindowTime);
+    }
+
+    private void ResetJump()
+    {
+        _desiredJump = false;
     }
 
     private void FixedUpdate()
@@ -45,7 +50,6 @@ public class Jump : MonoBehaviour
 
         if (_desiredJump)
         {
-            _desiredJump = false;
             JumpAction();
         }
 
@@ -68,7 +72,8 @@ public class Jump : MonoBehaviour
     {
         if (_onGround || _jumpPhase < _maxAirJumps)
         {
-            //_animator.SetBool("IsJumping", true);
+            _desiredJump = false;
+
             _jumpPhase += 1;
 
             _jumpSpeed = Mathf.Sqrt(-2f * Physics2D.gravity.y * _jumpHeight);
@@ -85,5 +90,3 @@ public class Jump : MonoBehaviour
         }
     }
 }
-
-

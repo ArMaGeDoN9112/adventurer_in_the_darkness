@@ -6,18 +6,18 @@ public class Teleport : MonoBehaviour
 {
     public Teleport _connectedPortal;
     private GameObject _player;
-    private Controller _playerController;
+    private PlayerInputHandler _playerInputHandler;
 
 
     void Awake()
     {
         _player = GameObject.Find("Player");
-        _playerController = _player.GetComponent<Controller>();
+        _playerInputHandler = _player.GetComponent<PlayerInputHandler>();
     }
 
     void Update()
     {
-        if (_playerController.input.RetrieveUseInput() && IsOnDistance())
+        if (_playerInputHandler.HandleUse() && IsOnDistance())
         {
             Invoke(nameof(TeleportPlayer), 0.1f);
         }
