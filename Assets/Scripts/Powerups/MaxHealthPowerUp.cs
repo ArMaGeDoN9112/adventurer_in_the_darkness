@@ -6,6 +6,6 @@ public class HealthPowerup : MonoBehaviour, IPowerup
 
     public void Apply(GameObject target)
     {
-        target.GetComponent<Health>()?.IncreaseHealth(_addToHealthAmount);
+        target.GetComponent<IHealable>()?.IncreaseHealth(_addToHealthAmount);
     }
 }
