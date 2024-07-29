@@ -14,12 +14,12 @@ public class MeleeAttack : AttackBase
         if (IsAttacking) return;
 
         base.BeginAttack(); // вызываем метод BeginAttack() у родительского класса
-        _animator.SetBool("IsAttacking", true);
+        _animator.SetBool("IsAttackingMelee", true);
     }
 
     public override void EndAttack()
     {
         base.EndAttack();
-        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool("IsAttackingMelee", false);
     }
 }

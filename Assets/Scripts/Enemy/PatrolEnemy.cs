@@ -61,7 +61,7 @@ public class PatrolEnemy : MonoBehaviour
 
     public virtual void SetForwardVector(Vector2 forward)
     {
-        _forwardVector = forward;
+        _forwardVector = forward.normalized;
         transform.localScale = new Vector3(
             Mathf.Abs(transform.localScale.x) * _forwardVector.x,
             transform.localScale.y,

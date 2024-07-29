@@ -18,9 +18,15 @@ public class Projectile : MonoBehaviour
         Destroy(gameObject);
     }
 
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+        Destroy(gameObject);
+    }
+
     // STEP 6: Реализуйте данный метод, чтобы он задавал направление полета снаряду
     public void SetDirection(Vector2 direction)
     {
         _body.velocity = direction * _speed;
+        _body.gravityScale = 0;
     }
 }

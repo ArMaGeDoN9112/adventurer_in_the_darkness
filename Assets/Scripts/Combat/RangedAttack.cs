@@ -16,21 +16,23 @@ public class RangedAttack : AttackBase
     {
         if (IsAttacking) return;
         base.BeginAttack();
-        _animator.SetBool("IsAttacking", true);
+        _animator.SetBool("IsAttackingRanged", true);
     }
 
     public override void EndAttack()
     {
         base.EndAttack();
-        _animator.SetBool("IsAttacking", false);
+        _animator.SetBool("IsAttackingRanged", false);
 
         Vector3 toTarget = (_target - transform.position).normalized;
+        int mnoz = toTarget.y > 0 ? 1 : -1;
         Projectile projectile = Instantiate(
             _projectilePrefab,
             transform.position + toTarget * _projectileSpawnOffset,
-            Quaternion.identity,
+            Quaternion.Euler(mnoz * Vector3.forward * Mathf.Acos(toTarget.x) * Mathf.Rad2Deg),
             _projectileParent
         );
+
         // STEP 7: задайте направление движения снаряду
         projectile.SetDirection(toTarget);
     }

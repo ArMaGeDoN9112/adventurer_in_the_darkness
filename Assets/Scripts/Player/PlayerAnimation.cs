@@ -3,6 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 public class PlayerAnimation : MonoBehaviour
 {
+    [SerializeField] private AnimationClip _hurtAnimation;
+    [SerializeField] public AnimationClip _jumpAnimation;
     private Health _healthComponent;
     private Animator _animator;
     private Rigidbody2D _body;
@@ -11,12 +13,14 @@ public class PlayerAnimation : MonoBehaviour
     private void OnEnable()
     {
         _healthComponent.OnDamageTaken += EnableHurtParameter;
+        _healthComponent.OnDamageTaken += DisableHurtParameter;
         _healthComponent.OnDeath += EnableIsDeadParameter;
     }
 
     private void OnDisable()
     {
         _healthComponent.OnDamageTaken -= EnableHurtParameter;
+        _healthComponent.OnDamageTaken -= DisableHurtParameter;
         _healthComponent.OnDeath -= EnableIsDeadParameter;
     }
 
@@ -32,7 +36,6 @@ public class PlayerAnimation : MonoBehaviour
     {
         _animator.SetFloat("VelocityX", Mathf.Abs(_body.velocity.x));
         _animator.SetFloat("VelocityY", _body.velocity.y);
-        _animator.SetBool("IsJumping", !_ground.OnGround);
     }
 
     public void SetInputX(float inputX)
@@ -42,6 +45,7 @@ public class PlayerAnimation : MonoBehaviour
             Mathf.Sign(inputX) * Mathf.Abs(transform.localScale.x),
             transform.localScale.y
         );
+
     }
 
     private void EnableIsDeadParameter()
@@ -54,13 +58,23 @@ public class PlayerAnimation : MonoBehaviour
         _animator.SetBool("Hurt", true);
     }
 
-    public void DisableHurtParameter(float time)
+    public void DisableHurtParameter(int damage)
     {
-        Invoke(nameof(DisableHurtParameter), time);
+        Invoke(nameof(DisableHurtParameter), _hurtAnimation.length);
     }
 
     private void DisableHurtParameter()
     {
         _animator.SetBool("Hurt", false);
+    }
+
+    public void EnableJumpParameter()
+    {
+        _animator.SetBool("IsJumping", true);
+        Invoke(nameof(DisableJumpParameter), 0.1f);
+    }
+    private void DisableJumpParameter()
+    {
+        _animator.SetBool("IsJumping", false);
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class PlayerInputHandler : MonoBehaviour
 {
@@ -6,10 +7,13 @@ public class PlayerInputHandler : MonoBehaviour
     private float _horizontal;
     private IMove _movable;
     private Jump _jump;
-    private AttackBase _attack;
+    private MeleeAttack _meleeAttack;
+    private PlayerRangedAttack _rangedAttack;
     private Health _health;
     private PlayerAnimation _animation;
     private Ground _ground;
+    private SetOnPause _pause;
+    private CharacterSound _sound;
     private bool _isDead;
 
     private void OnEnable()
@@ -27,9 +31,12 @@ public class PlayerInputHandler : MonoBehaviour
         _movable = GetComponent<IMove>();
         _jump = GetComponent<Jump>();
         _animation = GetComponent<PlayerAnimation>();
-        _attack = GetComponent<AttackBase>();
+        _meleeAttack = GetComponent<MeleeAttack>();
+        _rangedAttack = GetComponent<PlayerRangedAttack>();
         _ground = GetComponent<Ground>();
         _health = GetComponent<Health>();
+        _pause = GetComponent<SetOnPause>();
+        _sound = GetComponent<CharacterSound>();
     }
 
     private void Update()
@@ -38,15 +45,20 @@ public class PlayerInputHandler : MonoBehaviour
 
         _horizontal = Input.GetAxisRaw("Horizontal");
 
-        _horizontal = _attack.IsAttacking && _ground.OnGround ? 0 : _horizontal;
+        _horizontal = (_meleeAttack.IsAttacking || _rangedAttack.IsAttacking) && _ground.OnGround ? 0 : _horizontal;
         _movable.SetVelocity(new Vector2(_horizontal, 0), _speed);
         _animation.SetInputX(_horizontal);
 
-        if (Input.GetButtonDown("Attack"))
-            _attack.BeginAttack();
 
         if (Input.GetButtonDown("Jump"))
-            _jump.Action();
+        {
+            _sound.PlayJumpSound();
+            _animation.EnableJumpParameter();
+            DoJump();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+            _pause.SetPause();
     }
 
     private void HandleDeath()
@@ -57,5 +69,10 @@ public class PlayerInputHandler : MonoBehaviour
     public bool HandleUse()
     {
         return Input.GetKeyDown(KeyCode.E);
+    }
+
+    private void DoJump()
+    {
+        _jump.Action();
     }
 }

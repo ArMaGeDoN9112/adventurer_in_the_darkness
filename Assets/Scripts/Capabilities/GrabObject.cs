@@ -12,6 +12,8 @@ public class GrabObject : MonoBehaviour
 
     private Rigidbody2D body, bodyGrabbed;
     private GameObject currentlyGrabbedObject;
+    private GameObject obj;
+
     public bool abilityEnabled = false;
     // private bool thrown = false;
 
@@ -22,10 +24,14 @@ public class GrabObject : MonoBehaviour
 
     private void Update()
     {
+        obj = FindNearestObject();
+
         if (Input.GetKeyDown(KeyCode.F) && abilityEnabled)
         {
-            if (currentlyGrabbedObject == null)
-                GetNearestObject();
+            if (currentlyGrabbedObject == null && obj != null)
+            {
+                GrabClosestObject(obj);
+            }
             else
             {
                 bodyGrabbed.gravityScale = 1;
@@ -41,6 +47,7 @@ public class GrabObject : MonoBehaviour
 
         if (currentlyGrabbedObject != null)
         {
+            HintOff(currentlyGrabbedObject);
             bodyGrabbed.velocity = new Vector2(0f, 0f);
             bodyGrabbed.excludeLayers = playerLayer;
             bodyGrabbed.gravityScale = 0;
@@ -53,17 +60,7 @@ public class GrabObject : MonoBehaviour
         }
     }
 
-    // private void OnCollisionExit2D(Collision2D collision)
-    // {
-    //     Debug.Log(collision.collider.gameObject.name);
-    //     Debug.Log(bodyGrabbed.gameObject.name);
-    //     if (collision.collider.gameObject == bodyGrabbed.gameObject)
-    //     {
-    //         bodyGrabbed.excludeLayers = 0;
-    //     }
-    // }
-
-    private void GetNearestObject()
+    private GameObject FindNearestObject()
     {
         RaycastHit2D[] hits = Physics2D.CircleCastAll(
             transform.position,
@@ -86,9 +83,52 @@ public class GrabObject : MonoBehaviour
             }
         }
 
-        currentlyGrabbedObject = closest;
+        RaycastHit2D[] hitsToOff = Physics2D.CircleCastAll(
+            transform.position,
+            maxDistance + 1,
+            Vector2.zero,
+            0,
+            grabbableLayer
+        );
+
+        foreach (RaycastHit2D hit in hitsToOff)
+        {
+            HintOff(hit.transform.gameObject);
+        }
+
+        if (closest != null && abilityEnabled)
+            HintOn(closest);
+        return closest;
+    }
+
+
+    private void GrabClosestObject(GameObject target)
+    {
+        currentlyGrabbedObject = target;
         if (currentlyGrabbedObject != null)
             bodyGrabbed = currentlyGrabbedObject.GetComponent<Rigidbody2D>();
+    }
+
+    private bool IsOnDistance(GameObject obj)
+    {
+        if (Vector2.Distance(transform.position, obj.transform.position) < maxDistance)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void HintOn(GameObject obj)
+    {
+        GameObject child = obj.transform.GetChild(0).gameObject;
+        child.SetActive(true);
+        child.transform.position = new Vector3(obj.transform.position.x, obj.transform.position.y + 2, obj.transform.position.z);
+        child.transform.eulerAngles = new Vector3(0, 0, 0);
+    }
+
+    private void HintOff(GameObject obj)
+    {
+        obj.transform.GetChild(0).gameObject.SetActive(false);
     }
 
     private void OnDrawGizmos()

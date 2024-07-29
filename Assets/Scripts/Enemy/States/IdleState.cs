@@ -1,5 +1,7 @@
 
 
+using UnityEngine;
+
 public class IdleState : FsmState
 {
     private PatrolEnemy _enemy;
@@ -25,5 +27,10 @@ public class IdleState : FsmState
         {
             Fsm.SetState<AttackState>();
         }
+
+        _timer += Time.deltaTime;
+
+        if (_timer >= _exitTime)
+            Fsm.SetState<PatrolState>();
     }
 }

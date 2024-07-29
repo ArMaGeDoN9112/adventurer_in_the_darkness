@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 
-    //компонент, отвечающий за здоровье сущности
+//компонент, отвечающий за здоровье сущности
 public class Health : MonoBehaviour, IDamageable, IHealable
 {
     public event Action OnDeath; //событие, вызываемое при смерти
@@ -13,8 +13,8 @@ public class Health : MonoBehaviour, IDamageable, IHealable
 
     private int _currentHealth;
 
-    public int CurrentHealth { get {return _currentHealth;} }
-    public int MaxHealth { get {return _maxHealth;} }
+    public int CurrentHealth { get { return _currentHealth; } }
+    public int MaxHealth { get { return _maxHealth; } }
 
     private void Start()
     {
@@ -29,17 +29,11 @@ public class Health : MonoBehaviour, IDamageable, IHealable
         _currentHealth -= amount;
         _currentHealth = Mathf.Clamp(_currentHealth, 0, _maxHealth); //здоровье не может быть < 0
 
-        if (_currentHealth == 0) 
-        {
+        OnDamageTaken?.Invoke(amount);
+        if (_currentHealth == 0)
             OnDeath?.Invoke();
-        }
-        else
-        {
-            OnDamageTaken?.Invoke(amount);
-        }
     }
-    // STEP 10: declare Heal() in IHealable interface
-    // and implement here
+
     public void Heal(int amount)
     {
         if (amount < 0) //нельзя восстановить отрицательное здоровье

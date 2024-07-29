@@ -37,8 +37,11 @@ public class DeadState : FsmState
 
     public override void Exit()
     {
-        _animator.SetBool("IsDead", false);
-        Health health = _enemy.GetComponent<Health>();
-        health.Heal(health.MaxHealth);
+        if (_respawn)
+        {
+            _animator.SetBool("IsDead", false);
+            Health health = _enemy.GetComponent<Health>();
+            health.Heal(health.MaxHealth);
+        }
     }
 }
